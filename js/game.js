@@ -1,44 +1,43 @@
+window.TicGame = {};
 
-var currentUserVal = "X";
-var isGameWithMachine = false;
+window.TicGame.initGame = function initGame(){
+	window.TicGame.currentUserVal = "X";
+	window.TicGame.isGameWithMachine = false;
+	window.TicGame.gameArea = [];
+	window.TicGame.isGameRunning = false;
 
-function Block(setted, val){
-	this.isSetted = setted;
-	this.setVal = setted ? val: null;
-	this.set = function(val){
-		this.isSetted = true;
-		this.setVal = val;
-	};
-};
+	var cells = document.getElementsByClassName("cell");
+	
+	for (var i = 0; i < cells.length; i++) {
+		cells[i].addEventListener("click", window.TicGame.onBlockClick);
+	}	
 
-var gameArea = [];
-var isGameRunning = false;
-
-function startGame(){
-	gameArea = [];
-	for (var x = 0; x < 3; x++) {
-		gameArea[x] = [];
-		for (var y = 0; y < 3; y++) {
-			gameArea[x].push(new Block(false));
-		}
-	}
-	isGameRunning = true;
-	updateBlocks();
+	window.TicGame.startGame();
 }
 
-function machine(){
+window.TicGame.startGame = function startGame(){
+	window.TicGame.gameArea = [];
+	for (var x = 0; x < 3; x++) {
+		window.TicGame.gameArea[x] = [];
+		for (var y = 0; y < 3; y++) {
+			window.TicGame.gameArea[x].push(new window.TicGame.Block(false));
+		}
+	}
+	window.TicGame.isGameRunning = true;
+	window.TicGame.updateBlocks();
+}
+
+window.TicGame.machine = function machine(){
 	var randomCellX, randomCellY;
 	var xyArr = [];
 
-	for (var x = 0; x < gameArea.length; x++) {
-		for (var y = 0; y < gameArea[x].length; y++) {
-			if(!gameArea[x][y].isSetted){
+	for (var x = 0; x < window.TicGame.gameArea.length; x++) {
+		for (var y = 0; y < window.TicGame.gameArea[x].length; y++) {
+			if(!window.TicGame.gameArea[x][y].isSetted){
 				xyArr.push([x,y]);
 			}
 		}
 	}
-
-	console.log(xyArr);
 
 	var min = 0;
 	var max = xyArr.length;
@@ -47,28 +46,23 @@ function machine(){
 	randomCellX = xyArr[index][0];
 	randomCellY = xyArr[index][1];
 
-	gameArea[randomCellX][randomCellY].set("O");
-	step();
+	window.TicGame.gameArea[randomCellX][randomCellY].set("O");
+	window.TicGame.step();
 }
 
-var cells = document.getElementsByClassName("cell");
-for (var i = 0; i < cells.length; i++) {
-		cells[i].addEventListener("click", onBlockClick);
-	}	
+window.TicGame.step = function step(){
 
-function step(){
-
-	for (var x = 0; x < gameArea.length; x++) {
+	for (var x = 0; x < window.TicGame.gameArea.length; x++) {
 
 		var row = [];
 		for (var y = 0; y < 3; y++) {
-			row.push(gameArea[y][x]);
+			row.push(window.TicGame.gameArea[y][x]);
 		}
 
 
-		var arg1 = gameArea[x].every(function(val){
+		var arg1 = window.TicGame.gameArea[x].every(function(val){
 			return val.setVal == "X";
-		}) || gameArea[x].every(function(val){
+		}) || window.TicGame.gameArea[x].every(function(val){
 			return val.setVal == "O";
 		});
 
@@ -78,62 +72,34 @@ function step(){
 			return val.setVal == "O";
 		});
 
-		var arg3 = (gameArea[0][0].setVal !== null && gameArea[0][0].setVal == gameArea[1][1].setVal && gameArea[1][1].setVal == gameArea[2][2].setVal) || (gameArea[0][2].setVal !== null && gameArea[0][2].setVal == gameArea[1][1].setVal && gameArea[1][1].setVal == gameArea[2][0].setVal);
+		var arg3 = (window.TicGame.gameArea[0][0].setVal !== null && window.TicGame.gameArea[0][0].setVal == window.TicGame.gameArea[1][1].setVal && window.TicGame.gameArea[1][1].setVal == window.TicGame.gameArea[2][2].setVal) || (window.TicGame.gameArea[0][2].setVal !== null && window.TicGame.gameArea[0][2].setVal == window.TicGame.gameArea[1][1].setVal && window.TicGame.gameArea[1][1].setVal == window.TicGame.gameArea[2][0].setVal);
 
 		if( arg1 || arg2 || arg3){
 			
-			updateBlocks();
-			onWin(currentUserVal);
-			isGameRunning = false;
+			window.TicGame.updateBlocks();
+			window.TicGame.onWin(window.TicGame.currentUserVal);
+			window.TicGame.isGameRunning = false;
 			return;
 		}
-		//console.log(row);
 	}
 
-
-	currentUserVal = currentUserVal === "X" ? "O" : "X";
-
-	updateBlocks();
-
-
-	if(currentUserVal == "O" && isGameWithMachine)
+	window.TicGame.currentUserVal = window.TicGame.currentUserVal === "X" ? "O" : "X";
+	window.TicGame.updateBlocks();
+	if(window.TicGame.currentUserVal == "O" && window.TicGame.isGameWithMachine)
 	{
-		machine();
+		window.TicGame.machine();
 	}
 }
 
-function onWin(who){
-	alert(who+" - You WON! Lex always WON!");
-}
-
-function onBlockClick(e){
-	var cell = this;
-	var y = cell.attributes[1].value;
-	var x = cell.parentNode.attributes[1].value;
-
-	//console.log(x,y);
-	if(!isGameRunning)
-		return;
-
-	if(!gameArea[x][y].isSetted){
-		gameArea[x][y].set(currentUserVal);
-		step();
-	}
-	console.log( gameArea[x][y] );
-}
-
-function updateBlocks(){
-	for (var x = 0; x < gameArea.length; x++) {
-		for (var y = 0; y < gameArea[x].length; y++) {
+window.TicGame.updateBlocks = function updateBlocks(){
+	for (var x = 0; x < window.TicGame.gameArea.length; x++) {
+		for (var y = 0; y < window.TicGame.gameArea[x].length; y++) {
 			var cell = document.querySelector(".row[data-row='"+x+"'] .cell[data-cell='"+y+"']");
-			if(gameArea[x][y].isSetted){
-				cell.textContent = gameArea[x][y].setVal;
+			if(window.TicGame.gameArea[x][y].isSetted){
+				cell.textContent = window.TicGame.gameArea[x][y].setVal;
 			}else{
 				cell.textContent = "";
 			}			
 		}
 	}
 }
-
-
-startGame();
